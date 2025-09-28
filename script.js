@@ -1,68 +1,50 @@
-const provinsiSelect = document.getElementById("provinsi");
-const kabupatenSelect = document.getElementById("kabupaten");
-const kecamatanSelect = document.getElementById("kecamatan");
-const hasilDiv = document.getElementById("hasil");
+let provinsiData = [];
+let kotaData = [];
+let kecamatanData = [];
+let kodeposData = [];
 
-async function fetchData(url) {
-    const response = await fetch(url);
-    return await response.json();
+async function loadData() {
+    provinsiData = await fetch('data/provinsi.json').then(res => res.json());
+    kotaData = await fetch('data/kota.json').then(res => res.json());
+    kecamatanData = await fetch('data/kecamatan.json').then(res => res.json());
+    kodeposData = await fetch('data/kodepos.json').then(res => res.json());
+    
+    populateProvinsi();
 }
 
-async function loadProvinsi() {
-    const provinsiData = await fetchData("https://wilayah.id/api/provinces.json");
-    provinsiData.forEach(prov => {
-        const option = document.createElement("option");
-        option.value = prov.id;
-        option.text = prov.name;
-        provinsiSelect.add(option);
+function populateProvinsi() {
+    const provinsiSelect = document.getElementById('provinsi');
+    provinsiSelect.innerHTML = '<option value="">--Pilih Provinsi--</option>';
+    provinsiData.forEach(p => {
+        provinsiSelect.innerHTML += `<option value="${p.id}">${p.nama}</option>`;
     });
 }
 
-provinsiSelect.addEventListener("change", async function() {
-    kabupatenSelect.innerHTML = '<option value="">--Pilih Kabupaten/Kota--</option>';
-    kecamatanSelect.innerHTML = '<option value="">--Pilih Kecamatan--</option>';
-
-    if (!this.value) return;
-
-    const kabupatenData = await fetchData(`https://wilayah.id/api/regencies/${this.value}.json`);
-    kabupatenData.forEach(kab => {
-        const option = document.createElement("option");
-        option.value = kab.id;
-        option.text = kab.name;
-        kabupatenSelect.add(option);
+document.getElementById('provinsi').addEventListener('change', function() {
+    const provId = parseInt(this.value);
+    const kotaSelect = document.getElementById('kota');
+    kotaSelect.innerHTML = '<option value="">--Pilih Kota--</option>';
+    kotaData.filter(k => k.provinsi_id === provId).forEach(k => {
+        kotaSelect.innerHTML += `<option value="${k.id}">${k.nama}</option>`;
     });
+    document.getElementById('kecamatan').innerHTML = '<option value="">--Pilih Kecamatan--</option>';
+    document.getElementById('kodepos').value = '';
 });
 
-kabupatenSelect.addEventListener("change", async function() {
-    kecamatanSelect.innerHTML = '<option value="">--Pilih Kecamatan--</option>';
-
-    if (!this.value) return;
-
-    const kecamatanData = await fetchData(`https://wilayah.id/api/districts/${this.value}.json`);
-    kecamatanData.forEach(kec => {
-        const option = document.createElement("option");
-        option.value = kec.id;
-        option.text = kec.name;
-        kecamatanSelect.add(option);
+document.getElementById('kota').addEventListener('change', function() {
+    const kotaId = parseInt(this.value);
+    const kecSelect = document.getElementById('kecamatan');
+    kecSelect.innerHTML = '<option value="">--Pilih Kecamatan--</option>';
+    kecamatanData.filter(kec => kec.kota_id === kotaId).forEach(kec => {
+        kecSelect.innerHTML += `<option value="${kec.id}">${kec.nama}</option>`;
     });
+    document.getElementById('kodepos').value = '';
 });
 
-async function cariKodePos() {
-    const provinsi = provinsiSelect.value;
-    const kabupaten = kabupatenSelect.value;
-    const kecamatan = kecamatanSelect.value;
+document.getElementById('kecamatan').addEventListener('change', function() {
+    const kecId = parseInt(this.value);
+    const kodepos = kodeposData.find(k => k.kecamatan_id === kecId);
+    document.getElementById('kodepos').value = kodepos ? kodepos.kodepos : '';
+});
 
-    if (!provinsi || !kabupaten || !kecamatan) {
-        hasilDiv.innerHTML = "<p>Silakan pilih semua kategori.</p>";
-        return;
-    }
-
-    const kodePosData = await fetchData(`https://alamat.thecloudalert.com/api/kodepos/get/?d_kabkota_id=${kabupaten}&d_kecamatan_id=${kecamatan}`);
-    if (kodePosData.status === 200 && kodePosData.result.length > 0) {
-        hasilDiv.innerHTML = `<p>Kode Pos: ${kodePosData.result[0].text}</p>`;
-    } else {
-        hasilDiv.innerHTML = "<p>Data tidak ditemukan.</p>";
-    }
-}
-
-window.onload = loadProvinsi;
+loadData();
