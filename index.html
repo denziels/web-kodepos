@@ -2,15 +2,538 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Pencarian Kode Pos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencarian Kode Pos Provinsi Jawa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        select:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .search-btn {
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .search-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+        }
+
+        .postal-code {
+            font-size: 2em;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h2>Pencarian Kode Pos</h2>
-    <select id="provinsi"></select>
-    <select id="kota"></select>
-    <select id="kecamatan"></select>
-    <input type="text" id="kodepos" placeholder="Kode Pos" readonly>
-    
-    <script src="script.js"></script>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Pencarian Kode Pos</h1>
+            <p>Provinsi Jawa - Indonesia</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="postalForm">
+                <div class="form-group">
+                    <label for="provinsi">Pilih Provinsi:</label>
+                    <select id="provinsi" name="provinsi" required>
+                        <option value="">-- Pilih Provinsi --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="kabupaten">Pilih Kabupaten/Kota:</label>
+                    <select id="kabupaten" name="kabupaten" required disabled>
+                        <option value="">-- Pilih Kabupaten/Kota --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="kecamatan">Pilih Kecamatan:</label>
+                    <select id="kecamatan" name="kecamatan" required disabled>
+                        <option value="">-- Pilih Kecamatan --</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="search-btn" disabled>🔍 Cari Kode Pos</button>
+            </form>
+
+            <div id="result" class="result-container">
+                <div class="result-title">📍 Informasi Daerah</div>
+                <div class="postal-code" id="postalCode"></div>
+                <div class="result-info" id="resultInfo"></div>
+            </div>
+
+            <div id="error" class="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data kode pos untuk provinsi Jawa
+        const postalData = {
+            "Jawa Barat": {
+                "Bandung": {
+                    "Bandung Wetan": { code: "40114", type: "Kecamatan", area: "Kota Bandung" },
+                    "Sumur Bandung": { code: "40112", type: "Kecamatan", area: "Kota Bandung" },
+                    "Coblong": { code: "40132", type: "Kecamatan", area: "Kota Bandung" },
+                    "Cicendo": { code: "40171", type: "Kecamatan", area: "Kota Bandung" }
+                },
+                "Bogor": {
+                    "Bogor Tengah": { code: "16121", type: "Kecamatan", area: "Kota Bogor" },
+                    "Bogor Utara": { code: "16151", type: "Kecamatan", area: "Kota Bogor" },
+                    "Bogor Selatan": { code: "16132", type: "Kecamatan", area: "Kota Bogor" },
+                    "Tanah Sareal": { code: "16161", type: "Kecamatan", area: "Kota Bogor" }
+                },
+                "Depok": {
+                    "Pancoran Mas": { code: "16431", type: "Kecamatan", area: "Kota Depok" },
+                    "Sukmajaya": { code: "16412", type: "Kecamatan", area: "Kota Depok" },
+                    "Beji": { code: "16421", type: "Kecamatan", area: "Kota Depok" },
+                    "Margonda": { code: "16424", type: "Kecamatan", area: "Kota Depok" }
+                },
+                "Bekasi": {
+                    "Bekasi Barat": { code: "17134", type: "Kecamatan", area: "Kota Bekasi" },
+                    "Bekasi Timur": { code: "17113", type: "Kecamatan", area: "Kota Bekasi" },
+                    "Medan Satria": { code: "17152", type: "Kecamatan", area: "Kota Bekasi" },
+                    "Bantar Gebang": { code: "17152", type: "Kecamatan", area: "Kota Bekasi" }
+                }
+            },
+            "Jawa Tengah": {
+                "Semarang": {
+                    "Semarang Tengah": { code: "50139", type: "Kecamatan", area: "Kota Semarang" },
+                    "Semarang Utara": { code: "50174", type: "Kecamatan", area: "Kota Semarang" },
+                    "Candisari": { code: "50232", type: "Kecamatan", area: "Kota Semarang" },
+                    "Gajahmungkur": { code: "50231", type: "Kecamatan", area: "Kota Semarang" }
+                },
+                "Solo": {
+                    "Laweyan": { code: "57148", type: "Kecamatan", area: "Kota Surakarta" },
+                    "Serengan": { code: "57155", type: "Kecamatan", area: "Kota Surakarta" },
+                    "Pasar Kliwon": { code: "57118", type: "Kecamatan", area: "Kota Surakarta" },
+                    "Jebres": { code: "57126", type: "Kecamatan", area: "Kota Surakarta" }
+                },
+                "Magelang": {
+                    "Magelang Utara": { code: "56115", type: "Kecamatan", area: "Kota Magelang" },
+                    "Magelang Selatan": { code: "56123", type: "Kecamatan", area: "Kota Magelang" },
+                    "Magelang Tengah": { code: "56127", type: "Kecamatan", area: "Kota Magelang" }
+                },
+                "Pekalongan": {
+                    "Pekalongan Barat": { code: "51119", type: "Kecamatan", area: "Kota Pekalongan" },
+                    "Pekalongan Timur": { code: "51127", type: "Kecamatan", area: "Kota Pekalongan" },
+                    "Pekalongan Utara": { code: "51141", type: "Kecamatan", area: "Kota Pekalongan" }
+                }
+            },
+            "Jawa Timur": {
+                "Surabaya": {
+                    "Surabaya Pusat": { code: "60271", type: "Kecamatan", area: "Kota Surabaya" },
+                    "Gubeng": { code: "60281", type: "Kecamatan", area: "Kota Surabaya" },
+                    "Wonokromo": { code: "60243", type: "Kecamatan", area: "Kota Surabaya" },
+                    "Tegalsari": { code: "60262", type: "Kecamatan", area: "Kota Surabaya" }
+                },
+                "Malang": {
+                    "Klojen": { code: "65119", type: "Kecamatan", area: "Kota Malang" },
+                    "Blimbing": { code: "65141", type: "Kecamatan", area: "Kota Malang" },
+                    "Kedungkandang": { code: "65136", type: "Kecamatan", area: "Kota Malang" },
+                    "Sukun": { code: "65147", type: "Kecamatan", area: "Kota Malang" }
+                },
+                "Sidoarjo": {
+                    "Sidoarjo": { code: "61215", type: "Kecamatan", area: "Kabupaten Sidoarjo" },
+                    "Waru": { code: "61256", type: "Kecamatan", area: "Kabupaten Sidoarjo" },
+                    "Taman": { code: "61257", type: "Kecamatan", area: "Kabupaten Sidoarjo" },
+                    "Gedangan": { code: "61254", type: "Kecamatan", area: "Kabupaten Sidoarjo" }
+                },
+                "Gresik": {
+                    "Gresik": { code: "61111", type: "Kecamatan", area: "Kabupaten Gresik" },
+                    "Kebomas": { code: "61121", type: "Kecamatan", area: "Kabupaten Gresik" },
+                    "Manyar": { code: "61151", type: "Kecamatan", area: "Kabupaten Gresik" },
+                    "Driyorejo": { code: "61177", type: "Kecamatan", area: "Kabupaten Gresik" }
+                }
+            },
+            "DKI Jakarta": {
+                "Jakarta Pusat": {
+                    "Menteng": { code: "10310", type: "Kecamatan", area: "Jakarta Pusat" },
+                    "Gambir": { code: "10110", type: "Kecamatan", area: "Jakarta Pusat" },
+                    "Tanah Abang": { code: "10230", type: "Kecamatan", area: "Jakarta Pusat" },
+                    "Senen": { code: "10410", type: "Kecamatan", area: "Jakarta Pusat" }
+                },
+                "Jakarta Selatan": {
+                    "Kebayoran Baru": { code: "12110", type: "Kecamatan", area: "Jakarta Selatan" },
+                    "Tebet": { code: "12810", type: "Kecamatan", area: "Jakarta Selatan" },
+                    "Setiabudi": { code: "12910", type: "Kecamatan", area: "Jakarta Selatan" },
+                    "Mampang Prapatan": { code: "12790", type: "Kecamatan", area: "Jakarta Selatan" }
+                },
+                "Jakarta Timur": {
+                    "Cakung": { code: "13910", type: "Kecamatan", area: "Jakarta Timur" },
+                    "Pulogadung": { code: "13260", type: "Kecamatan", area: "Jakarta Timur" },
+                    "Jatinegara": { code: "13310", type: "Kecamatan", area: "Jakarta Timur" },
+                    "Duren Sawit": { code: "13440", type: "Kecamatan", area: "Jakarta Timur" }
+                },
+                "Jakarta Barat": {
+                    "Kebon Jeruk": { code: "11530", type: "Kecamatan", area: "Jakarta Barat" },
+                    "Grogol Petamburan": { code: "11470", type: "Kecamatan", area: "Jakarta Barat" },
+                    "Taman Sari": { code: "11110", type: "Kecamatan", area: "Jakarta Barat" },
+                    "Tambora": { code: "11240", type: "Kecamatan", area: "Jakarta Barat" }
+                },
+                "Jakarta Utara": {
+                    "Penjaringan": { code: "14450", type: "Kecamatan", area: "Jakarta Utara" },
+                    "Pademangan": { code: "14410", type: "Kecamatan", area: "Jakarta Utara" },
+                    "Tanjung Priok": { code: "14310", type: "Kecamatan", area: "Jakarta Utara" },
+                    "Koja": { code: "14210", type: "Kecamatan", area: "Jakarta Utara" }
+                }
+            },
+            "DI Yogyakarta": {
+                "Yogyakarta": {
+                    "Danurejan": { code: "55213", type: "Kecamatan", area: "Kota Yogyakarta" },
+                    "Gedongtengen": { code: "55271", type: "Kecamatan", area: "Kota Yogyakarta" },
+                    "Gondomanan": { code: "55122", type: "Kecamatan", area: "Kota Yogyakarta" },
+                    "Jetis": { code: "55233", type: "Kecamatan", area: "Kota Yogyakarta" }
+                },
+                "Sleman": {
+                    "Depok": { code: "55281", type: "Kecamatan", area: "Kabupaten Sleman" },
+                    "Mlati": { code: "55284", type: "Kecamatan", area: "Kabupaten Sleman" },
+                    "Godean": { code: "55264", type: "Kecamatan", area: "Kabupaten Sleman" },
+                    "Ngemplak": { code: "55584", type: "Kecamatan", area: "Kabupaten Sleman" }
+                },
+                "Bantul": {
+                    "Sewon": { code: "55185", type: "Kecamatan", area: "Kabupaten Bantul" },
+                    "Kasihan": { code: "55184", type: "Kecamatan", area: "Kabupaten Bantul" },
+                    "Banguntapan": { code: "55198", type: "Kecamatan", area: "Kabupaten Bantul" },
+                    "Pleret": { code: "55791", type: "Kecamatan", area: "Kabupaten Bantul" }
+                }
+            },
+            "Banten": {
+                "Tangerang": {
+                    "Tangerang": { code: "15111", type: "Kecamatan", area: "Kota Tangerang" },
+                    "Karawaci": { code: "15115", type: "Kecamatan", area: "Kota Tangerang" },
+                    "Cibodas": { code: "15138", type: "Kecamatan", area: "Kota Tangerang" },
+                    "Periuk": { code: "15131", type: "Kecamatan", area: "Kota Tangerang" }
+                },
+                "Serang": {
+                    "Serang": { code: "42111", type: "Kecamatan", area: "Kota Serang" },
+                    "Kasemen": { code: "42191", type: "Kecamatan", area: "Kota Serang" },
+                    "Walantaka": { code: "42183", type: "Kecamatan", area: "Kota Serang" },
+                    "Cipocok Jaya": { code: "42121", type: "Kecamatan", area: "Kota Serang" }
+                },
+                "Tangerang Selatan": {
+                    "Serpong": { code: "15310", type: "Kecamatan", area: "Kota Tangerang Selatan" },
+                    "Ciputat": { code: "15411", type: "Kecamatan", area: "Kota Tangerang Selatan" },
+                    "Pamulang": { code: "15417", type: "Kecamatan", area: "Kota Tangerang Selatan" },
+                    "Pondok Aren": { code: "15224", type: "Kecamatan", area: "Kota Tangerang Selatan" }
+                }
+            }
+        };
+
+        // Elements
+        const provinsiSelect = document.getElementById('provinsi');
+        const kabupatenSelect = document.getElementById('kabupaten');
+        const kecamatanSelect = document.getElementById('kecamatan');
+        const submitBtn = document.querySelector('.search-btn');
+        const resultDiv = document.getElementById('result');
+        const errorDiv = document.getElementById('error');
+        const postalCodeDiv = document.getElementById('postalCode');
+        const resultInfoDiv = document.getElementById('resultInfo');
+
+        // Initialize provinces
+        function initProvinces() {
+            Object.keys(postalData).forEach(provinsi => {
+                const option = document.createElement('option');
+                option.value = provinsi;
+                option.textContent = provinsi;
+                provinsiSelect.appendChild(option);
+            });
+        }
+
+        // Handle province selection
+        provinsiSelect.addEventListener('change', function() {
+            const selectedProvinsi = this.value;
+            
+            // Reset kabupaten and kecamatan
+            kabupatenSelect.innerHTML = '<option value="">-- Pilih Kabupaten/Kota --</option>';
+            kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+            kabupatenSelect.disabled = !selectedProvinsi;
+            kecamatanSelect.disabled = true;
+            updateSubmitButton();
+            hideResult();
+
+            if (selectedProvinsi) {
+                Object.keys(postalData[selectedProvinsi]).forEach(kabupaten => {
+                    const option = document.createElement('option');
+                    option.value = kabupaten;
+                    option.textContent = kabupaten;
+                    kabupatenSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Handle kabupaten selection
+        kabupatenSelect.addEventListener('change', function() {
+            const selectedProvinsi = provinsiSelect.value;
+            const selectedKabupaten = this.value;
+            
+            // Reset kecamatan
+            kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+            kecamatanSelect.disabled = !selectedKabupaten;
+            updateSubmitButton();
+            hideResult();
+
+            if (selectedKabupaten && selectedProvinsi) {
+                Object.keys(postalData[selectedProvinsi][selectedKabupaten]).forEach(kecamatan => {
+                    const option = document.createElement('option');
+                    option.value = kecamatan;
+                    option.textContent = kecamatan;
+                    kecamatanSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Handle kecamatan selection
+        kecamatanSelect.addEventListener('change', function() {
+            updateSubmitButton();
+            hideResult();
+        });
+
+        // Update submit button state
+        function updateSubmitButton() {
+            const isValid = provinsiSelect.value && kabupatenSelect.value && kecamatanSelect.value;
+            submitBtn.disabled = !isValid;
+        }
+
+        // Handle form submission
+        document.getElementById('postalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const provinsi = provinsiSelect.value;
+            const kabupaten = kabupatenSelect.value;
+            const kecamatan = kecamatanSelect.value;
+
+            hideError();
+
+            if (!provinsi || !kabupaten || !kecamatan) {
+                showError('Mohon lengkapi semua pilihan!');
+                return;
+            }
+
+            const data = postalData[provinsi][kabupaten][kecamatan];
+            
+            if (data) {
+                showResult(data, provinsi, kabupaten, kecamatan);
+            } else {
+                showError('Data kode pos tidak ditemukan!');
+            }
+        });
+
+        // Show result
+        function showResult(data, provinsi, kabupaten, kecamatan) {
+            postalCodeDiv.textContent = data.code;
+            
+            resultInfoDiv.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Provinsi:</span>
+                    <span>${provinsi}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Kabupaten/Kota:</span>
+                    <span>${kabupaten}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Kecamatan:</span>
+                    <span>${kecamatan}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Wilayah:</span>
+                    <span>${data.area}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tipe:</span>
+                    <span>${data.type}</span>
+                </div>
+            `;
+            
+            resultDiv.style.display = 'block';
+        }
+
+        // Show error
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(hideError, 5000);
+        }
+
+        // Hide error
+        function hideError() {
+            errorDiv.style.display = 'none';
+        }
+
+        // Hide result
+        function hideResult() {
+            resultDiv.style.display = 'none';
+        }
+
+        // Initialize the app
+        initProvinces();
+    </script>
 </body>
 </html>
